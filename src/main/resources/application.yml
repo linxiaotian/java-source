@@ -4,4 +4,44 @@ school:
   one:
     totalKlass: 100
     everyKlassStudents: 1
+spring:
+  datasource:
+    ds1:
+      driver-class-name: com.mysql.jdbc.Driver
+      url: jdbc:mysql://localhost:3306/mydb
+      username: root
+      password: 123456
+    ds2:
+      driver-class-name: com.mysql.jdbc.Driver
+      url: jdbc:mysql://localhost:3306/mydb
+      username: root
+      password: 123456
+
+  shardingsphere:
+    datasource:
+      common:
+        type: com.zaxxer.hikari.HikariDataSource
+        driver-class-name: com.mysql.cj.jdbc.Driver
+        url: jdbc:mysql://localhost:3306/mydb
+        username: root
+        password: 123456
+      names: master,slave0
+      master:
+        jdbc-url: jdbc:mysql://localhost:3306/mydb
+      slave0:
+        jdbc-url: jdbc:mysql://localhost:3306/mydb
+    rules:
+      replica-query:
+        data-sources:
+          ms:
+            primary-data-source-name: master
+            replica-data-source-names: slave0
+            load-balancer-name: round-robin
+        load-balancers:
+          round-robin:
+            type: ROUND_ROBIN
+            props:
+              workId: 1
+    props:
+      sql-show: true
 

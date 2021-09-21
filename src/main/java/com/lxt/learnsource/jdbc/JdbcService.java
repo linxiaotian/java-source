@@ -3,6 +3,8 @@ package com.lxt.learnsource.jdbc;
 
 import java.io.IOException;
 import java.sql.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class JdbcService {
 
@@ -14,6 +16,55 @@ public class JdbcService {
             i = conn.createStatement().executeUpdate(sql);
         } finally {
             DBUtils.closeResources(conn, null, null);
+        }
+        return i;
+    }
+
+    public static int insertOrder(Connection conn, OrderInfoEntity order) {
+        int i = 0;
+        String sql = "insert into order_info (order_id,order_sn,user_id,receive_user,province,city,district,address,payment_method,order_money\n" +
+                ",district_money,express_money,payment_money,express_name,express_sn,create_time,deliver_time,pay_time,receive_time,order_status,\n" +
+                "order_point,modified_time)  values(" + order.getOrderId() + "," + order.getOrderSn() + ",'" + order.getUserId() + "','" + order.getReceiveUser() + "','" + order.getProvinve()
+                + "','" + order.getCity() + "','" + order.getDistrict() + "','" + order.getAddress() + "','" + order.getPaymentMethod()
+                + "','" + order.getOrderMoney() + "','" + order.getDistrictMoney() + "','" + order.getExpressMoney()
+                + "','" + order.getPaymentMoney() + "','" + order.getExpressName() + "','" + order.getExpressSn()
+                + "',now(),now(),now(),now()" + ",'" + order.getOrderStatus() + "','" + order.getOrderPoint() + "',now())";
+        try {
+            i = conn.createStatement().executeUpdate(sql);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return i;
+    }
+
+    public static int insertOrderPtmt(Connection conn, OrderInfoEntity order) {
+        int i = 0;
+        String sql = "insert into order_info (order_id,order_sn,user_id,receive_user,province,city,district,address,payment_method,order_money\n" +
+                ",district_money,express_money,payment_money,express_name,express_sn,create_time,deliver_time,pay_time,receive_time,order_status,\n" +
+                "order_point,modified_time)  values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,now(),now(),now(),now(),?,?,now())";
+        PreparedStatement pstmt = null;
+        try {
+            pstmt = conn.prepareStatement(sql);
+            pstmt.setString(1, order.getOrderId());
+            pstmt.setLong(2, order.getOrderSn());
+            pstmt.setString(3,order.getUserId());
+            pstmt.setString(4, order.getReceiveUser());
+            pstmt.setString(5, order.getProvinve());
+            pstmt.setString(6, order.getCity());
+            pstmt.setString(7, order.getDistrict());
+            pstmt.setString(8, order.getAddress());
+            pstmt.setString(9, order.getPaymentMethod());
+            pstmt.setString(10, order.getOrderMoney());
+            pstmt.setString(11, order.getDistrictMoney());
+            pstmt.setString(12, order.getExpressMoney());
+            pstmt.setString(13, order.getPaymentMoney());
+            pstmt.setString(14, order.getExpressName());
+            pstmt.setString(15, order.getExpressSn());
+            pstmt.setString(16, order.getOrderStatus());
+            pstmt.setString(17, order.getOrderPoint());
+            i = pstmt.executeUpdate();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
         return i;
     }
@@ -171,29 +222,59 @@ public class JdbcService {
     }
 
     public static void main(String[] args) throws Exception {
-        StudentEntity s1 = new StudentEntity();
-        s1.setId(1);
-        s1.setName("insert");
-        insert(s1);
-        s1.setId(2);
-        s1.setName("insertPtmt");
-        insertPtmt(s1);
-        s1.setId(2);
-        s1.setName("update");
-        update(s1);
-        s1.setId(2);
-        s1.setName("updatePtmt");
-        updatePtmt(s1);
-        getAll();
-        getAllPtmt();
-        delete("insert");
-        deletePtmt("updatePtmt");
-        StudentEntity s2 = new StudentEntity();
-        s2.setId(11);
-        s2.setName("batchTrans");
-        batchUpdate(s2);
+//        StudentEntity s1 = new StudentEntity();
+//        s1.setId(1);
+//        s1.setName("insert");
+//        insert(s1);
+//        s1.setId(2);
+//        s1.setName("insertPtmt");
+//        insertPtmt(s1);
+//        s1.setId(2);
+//        s1.setName("update");
+//        update(s1);
+//        s1.setId(2);
+//        s1.setName("updatePtmt");
+//        updatePtmt(s1);
+//        getAll();
+//        getAllPtmt();
+//        delete("insert");
+//        deletePtmt("updatePtmt");
+//        StudentEntity s2 = new StudentEntity();
+//        s2.setId(11);
+//        s2.setName("batchTrans");
+//        batchUpdate(s2);
+//
+//        testHikari();
+//        OrderInfoEntity order = new OrderInfoEntity();
+//        order.setOrderId("1");
+//        order.setOrderSn(1000001L);
+//        order.setUserId("789234");
+//        order.setReceiveUser("huanzhang");
+//        order.setProvinve("010");
+//        order.setCity("010");
+//        order.setDistrict("124");
+//        order.setAddress("二道港2幢");
+//        order.setPaymentMethod("1");
+//        order.setOrderMoney("100.2");
+//        order.setDistrictMoney("10.2");
+//        order.setExpressMoney("5.0");
+//        order.setPaymentMoney("200.3");
+//
+//        order.setExpressName("申通");
+//        order.setExpressSn("1000234234");
+//        order.setOrderStatus("1");
+//        order.setOrderPoint("100");
+//        HikariUtils.getInstance().start();
+//        Connection conn = HikariUtils.getInstance().getConnection();
+//        insertOrderPtmt(conn,order);
 
-        testHikari();
+        ExecutorService service = Executors.newFixedThreadPool(100);
+        HikariUtils.getInstance().start();
+        for (int i = 1; i < 101; i++) {
+            Connection conn = HikariUtils.getInstance().getConnection();
+            service.execute(new InsertJob(i,conn));
+        }
+        service.shutdown();
 
     }
     private static void testHikari() throws IOException, SQLException {
