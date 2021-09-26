@@ -22,31 +22,33 @@ public class JdbcService {
 
     public static int insertOrder(Connection conn, OrderInfoEntity order) {
         int i = 0;
-        String sql = "insert into order_info (order_id,order_sn,user_id,receive_user,province,city,district,address,payment_method,order_money\n" +
+        String sql = "insert into t_order (order_id,order_sn,user_id,receive_user,province,city,district,address,payment_method,order_money\n" +
                 ",district_money,express_money,payment_money,express_name,express_sn,create_time,deliver_time,pay_time,receive_time,order_status,\n" +
-                "order_point,modified_time)  values(" + order.getOrderId() + "," + order.getOrderSn() + ",'" + order.getUserId() + "','" + order.getReceiveUser() + "','" + order.getProvinve()
-                + "','" + order.getCity() + "','" + order.getDistrict() + "','" + order.getAddress() + "','" + order.getPaymentMethod()
-                + "','" + order.getOrderMoney() + "','" + order.getDistrictMoney() + "','" + order.getExpressMoney()
-                + "','" + order.getPaymentMoney() + "','" + order.getExpressName() + "','" + order.getExpressSn()
-                + "',now(),now(),now(),now()" + ",'" + order.getOrderStatus() + "','" + order.getOrderPoint() + "',now())";
+                "order_point,modified_time)  values(" +"" + order.getOrderId() + "," + order.getOrderSn() + "," + order.getUserId() + ",'" + order.getReceiveUser() + "'," + order.getProvinve()
+                + "," + order.getCity() + "," + order.getDistrict() + ",'" + order.getAddress() + "'," + order.getPaymentMethod()
+                + "," + order.getOrderMoney() + "," + order.getDistrictMoney() + "," + order.getExpressMoney()
+                + "," + order.getPaymentMoney() + ",'" + order.getExpressName() + "','" + order.getExpressSn()
+                + "',now(),now(),now(),now()" + "," + order.getOrderStatus() + "," + order.getOrderPoint() + ",now());";
         try {
             i = conn.createStatement().executeUpdate(sql);
         } catch (Exception e) {
             e.printStackTrace();
+        } finally {
+            DBUtils.closeResources(conn, null, null);
         }
         return i;
     }
 
     public static int insertOrderPtmt(Connection conn, OrderInfoEntity order) {
         int i = 0;
-        String sql = "insert into order_info (order_id,order_sn,user_id,receive_user,province,city,district,address,payment_method,order_money\n" +
+        String sql = "insert into t_order (order_id,order_sn,user_id,receive_user,province,city,district,address,payment_method,order_money\n" +
                 ",district_money,express_money,payment_money,express_name,express_sn,create_time,deliver_time,pay_time,receive_time,order_status,\n" +
                 "order_point,modified_time)  values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,now(),now(),now(),now(),?,?,now())";
         PreparedStatement pstmt = null;
         try {
             pstmt = conn.prepareStatement(sql);
             pstmt.setString(1, order.getOrderId());
-            pstmt.setLong(2, order.getOrderSn());
+            pstmt.setString(2, order.getOrderSn());
             pstmt.setString(3,order.getUserId());
             pstmt.setString(4, order.getReceiveUser());
             pstmt.setString(5, order.getProvinve());
@@ -65,6 +67,8 @@ public class JdbcService {
             i = pstmt.executeUpdate();
         } catch (Exception e) {
             e.printStackTrace();
+        } finally {
+            DBUtils.closeResources(conn, pstmt, null);
         }
         return i;
     }
@@ -89,6 +93,19 @@ public class JdbcService {
         Connection conn = DBUtils.getConnection();
         int i = 0;
         String sql = "update student set name='" + studentEntity.getName() + "' where id='" + studentEntity.getId() + "'";
+        try {
+            i = conn.createStatement().executeUpdate(sql);
+            System.out.println("resutl: " + i);
+        } finally {
+            DBUtils.closeResources(conn, null, null);
+        }
+        return i;
+    }
+
+    public static int updateOrder(OrderInfoEntity order) throws SQLException {
+        Connection conn = DBUtils.getConnection();
+        int i = 0;
+        String sql = "update t_order set address='" + order.getAddress() + "' where order_id=" + order.getOrderId() + " and user_id=" + order.getUserId();
         try {
             i = conn.createStatement().executeUpdate(sql);
             System.out.println("resutl: " + i);
@@ -162,10 +179,49 @@ public class JdbcService {
         }
     }
 
+    public static Integer getAllOrder() throws SQLException {
+        Connection conn = DBUtils.getConnection();
+        String sql = "select * from t_order";
+        ResultSet rs = null;
+        try {
+            rs = conn.createStatement().executeQuery(sql);
+            int col = rs.getMetaData().getColumnCount();
+            System.out.println("allOrder============================");
+            while (rs.next()) {
+                for (int i = 1; i <= col; i++) {
+                    System.out.print(rs.getString(i) + "\t");
+                    if ((i == 2) && (rs.getString(i).length() < 8)) {
+                        System.out.print("\t");
+                    }
+                }
+                System.out.println("");
+            }
+            System.out.println("allOrder============================");
+        } finally {
+            DBUtils.closeResources(conn, null, rs);
+        }
+        return null;
+    }
+
     public static int delete(String name) {
         Connection conn = DBUtils.getConnection();
         int i = 0;
         String sql = "delete from student where name='" + name + "'";
+        try {
+            i = conn.createStatement().executeUpdate(sql);
+            System.out.println("resutl: " + i);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            DBUtils.closeResources(conn, null, null);
+        }
+        return i;
+    }
+
+    public static int deleteOrder(String userId, String orderId) {
+        Connection conn = DBUtils.getConnection();
+        int i = 0;
+        String sql = "delete from t_order where user_id=" + userId + " and order_id=" + orderId;
         try {
             i = conn.createStatement().executeUpdate(sql);
             System.out.println("resutl: " + i);
@@ -245,36 +301,43 @@ public class JdbcService {
 //        batchUpdate(s2);
 //
 //        testHikari();
-//        OrderInfoEntity order = new OrderInfoEntity();
-//        order.setOrderId("1");
-//        order.setOrderSn(1000001L);
-//        order.setUserId("789234");
-//        order.setReceiveUser("huanzhang");
-//        order.setProvinve("010");
-//        order.setCity("010");
-//        order.setDistrict("124");
-//        order.setAddress("二道港2幢");
-//        order.setPaymentMethod("1");
-//        order.setOrderMoney("100.2");
-//        order.setDistrictMoney("10.2");
-//        order.setExpressMoney("5.0");
-//        order.setPaymentMoney("200.3");
-//
-//        order.setExpressName("申通");
-//        order.setExpressSn("1000234234");
-//        order.setOrderStatus("1");
-//        order.setOrderPoint("100");
-//        HikariUtils.getInstance().start();
-//        Connection conn = HikariUtils.getInstance().getConnection();
-//        insertOrderPtmt(conn,order);
+        OrderInfoEntity order = new OrderInfoEntity();
+        order.setOrderId("2");
+        order.setOrderSn("1000002");
+        order.setUserId("3");
+        order.setReceiveUser("huanzhang");
+        order.setProvinve("010");
+        order.setCity("010");
+        order.setDistrict("124");
+        order.setAddress("二道港2幢");
+        order.setPaymentMethod("1");
+        order.setOrderMoney("100.2");
+        order.setDistrictMoney("10.2");
+        order.setExpressMoney("5.0");
+        order.setPaymentMoney("200.3");
 
-        ExecutorService service = Executors.newFixedThreadPool(100);
-        HikariUtils.getInstance().start();
-        for (int i = 1; i < 101; i++) {
-            Connection conn = HikariUtils.getInstance().getConnection();
-            service.execute(new InsertJob(i,conn));
-        }
-        service.shutdown();
+        order.setExpressName("申通");
+        order.setExpressSn("1000234234");
+        order.setOrderStatus("1");
+        order.setOrderPoint("100");
+        //HikariUtils.getInstance().start();
+        Connection conn = DBUtils.getConnection();
+        //insertOrder(conn,order);
+        OrderInfoEntity updateOrder = new OrderInfoEntity();
+        updateOrder.setOrderId("2");
+        updateOrder.setUserId("3");
+        updateOrder.setAddress("sjlsdfjslf");
+        updateOrder(updateOrder);
+        getAllOrder();
+        deleteOrder("3", "2");
+
+//        ExecutorService service = Executors.newFixedThreadPool(100);
+//        HikariUtils.getInstance().start();
+//        for (int i = 1; i < 101; i++) {
+//            Connection conn = HikariUtils.getInstance().getConnection();
+//            service.execute(new InsertJob(i,conn));
+//        }
+//        service.shutdown();
 
     }
     private static void testHikari() throws IOException, SQLException {

@@ -12,7 +12,7 @@ public class OrderInfoEntity implements Serializable {
 
     private String orderId;
 
-    private Long orderSn;
+    private String orderSn;
 
     private String userId;
 

@@ -4,9 +4,9 @@ import java.sql.*;
 
 public final class DBUtils {
 
-    private static String url = "jdbc:mysql://localhost:3306/mydb";
+    private static String url = "jdbc:mysql://localhost:3307/sharding_db";
     private static String user = "root";
-    private static String psw = "123456";
+    private static String psw = "root";
 
     static {
         try {

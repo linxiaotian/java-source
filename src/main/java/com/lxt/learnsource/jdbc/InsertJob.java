@@ -40,7 +40,7 @@ public class InsertJob implements Runnable {
 
         OrderInfoEntity order = new OrderInfoEntity();
         order.setOrderId(String.valueOf(orderId));
-        order.setOrderSn(new Date().getTime());
+        order.setOrderSn(String.valueOf(new Date().getTime()));
         order.setUserId("789234");
         order.setReceiveUser("huanzhang");
         order.setProvinve("010");
@@ -64,7 +64,7 @@ public class InsertJob implements Runnable {
 
         OrderInfoEntity order = new OrderInfoEntity();
         order.setOrderId(String.valueOf(orderId));
-        order.setOrderSn(new Date().getTime());
+        order.setOrderSn(String.valueOf(new Date().getTime()));
         order.setUserId("789234");
         order.setReceiveUser("huanzhang");
         order.setProvinve("010");
